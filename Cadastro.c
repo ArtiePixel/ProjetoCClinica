@@ -5,39 +5,35 @@
 // struct paciente
 typedef struct {
     char nome[50];
-    char inscricao[11];
+    char inscricao[21];
     int idade;
 } Paciente;
 
-void cadastrarPacientes(Paciente *pacientes, int quantidade) {
+void cadastrarPacientes(Paciente *pacientes, int quantidade){
     for (int i = 0; i < quantidade; i++) {
 
         printf("\nCadastro do Paciente %d:\n", i+1);
         printf("Nome: ");
         scanf("%49s", pacientes[i].nome);
         printf("Número de Inscrição: ");
-        scanf("%10s", pacientes[i].inscricao);
+        scanf("%20s", pacientes[i].inscricao);
         printf("Idade: ");
         scanf("%d", &pacientes[i].idade);
 
-        
         char nomeArquivo[60];
         snprintf(nomeArquivo, sizeof(nomeArquivo), "%s.txt", pacientes[i].nome);
 
-        
         FILE *arquivo = fopen(nomeArquivo, "w");
         if (arquivo == NULL) {
             printf("Erro ao criar arquivo para %s!\n", pacientes[i].nome);
             continue;
         }
-
-        // Escreve os dados no arquivo
+        
         fprintf(arquivo, "nome: %s, inscricao: %s, idade: %d", 
                 pacientes[i].nome, 
                 pacientes[i].inscricao, 
                 pacientes[i].idade);
 
-        // Fecha o arquivo
         fclose(arquivo);
         printf("Arquivo %s criado com sucesso!\n", nomeArquivo);
     }
