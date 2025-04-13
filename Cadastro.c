@@ -9,6 +9,11 @@ typedef struct {
     int idade;
 } Paciente;
 
+//placehoder
+void buscaPacientes (Paciente *pacientes, int quantidade) {
+
+}
+
 void cadastrarPacientes(Paciente *pacientes, int quantidade){
     for (int i = 0; i < quantidade; i++) {
 
