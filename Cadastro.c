@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 // struct paciente
 typedef struct {
@@ -10,6 +12,8 @@ typedef struct {
 } Paciente;
 
 void cadastrarPacientes(Paciente *pacientes, int quantidade) {
+    mkdir("./pacientes", 0777);
+
     for (int i = 0; i < quantidade; i++) {
 
         printf("\nCadastro do Paciente %d:\n", i+1);
@@ -20,9 +24,12 @@ void cadastrarPacientes(Paciente *pacientes, int quantidade) {
         printf("Idade: ");
         scanf("%d", &pacientes[i].idade);
 
-        
-        char nomeArquivo[60];
-        snprintf(nomeArquivo, sizeof(nomeArquivo), "%s.txt", pacientes[i].nome);
+        char nomePasta[200];
+        snprintf(nomePasta, sizeof(nomePasta), "./pacientes/%s", pacientes[i].nome);
+        mkdir(nomePasta, 0777);
+
+        char nomeArquivo[200];
+        snprintf(nomeArquivo, sizeof(nomeArquivo), "%s/%s.txt", nomePasta, pacientes[i].nome);
 
         
         FILE *arquivo = fopen(nomeArquivo, "w");
