@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1744683530 source:/home/seg/projeto meneguetti/projetoclinica/main.c
+	<SDL2/SDL.h>
+	<stdbool.h>
+	<math.h>
+

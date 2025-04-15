@@ -31,7 +31,7 @@ void draw_symbol(SDL_Renderer* renderer, SymbolType symbol, int x, int y) {
             SDL_RenderDrawLine(renderer, x + 10, y - 10, x - 10, y + 10);
             break;
         case SYMBOL_CIRCLE:
-            draw_circle(renderer, x, y, 10);
+            draw_circle(renderer, x, y, 5);
             break;
         case SYMBOL_ASTERISK:
             SDL_RenderDrawLine(renderer, x - 10, y, x + 10, y);       // horizontal
@@ -43,10 +43,8 @@ void draw_symbol(SDL_Renderer* renderer, SymbolType symbol, int x, int y) {
             SDL_RenderDrawLine(renderer, x, y - 10, x, y + 10);
             break;
         case SYMBOL_CHECK:
-            // Novo símbolo de "check"
-            // Primeiro traço: parte de baixo (para a esquerda)
             SDL_RenderDrawLine(renderer, x - 8, y, x - 2, y + 8);
-            // Segundo traço: parte de cima (para a direita)
+
             SDL_RenderDrawLine(renderer, x - 2, y + 8, x + 10, y - 4);
             break;
         default:
