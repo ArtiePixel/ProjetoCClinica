@@ -11,24 +11,32 @@ typedef struct {
     int idade;
 } Paciente;
 
+//diretiva para mudança de função a depender do sistema operacional
+#ifdef _WIN32
+    #define criarDiretorio _mkdir
+#else
+    #define criarDiretorio mkdir
+
+#endif
+
 void cadastrarPacientes(Paciente *pacientes, int quantidade) {
-    mkdir("./pacientes", 0777);
+    criarDiretorio("./pacientes", 0777);
 
     for (int i = 0; i < quantidade; i++) {
 
         printf("\nCadastro do Paciente %d:\n", i+1);
         printf("Nome: ");
         scanf("%49s", pacientes[i].nome);
-        printf("Número de Inscrição: ");
+        printf("Número de Inscrição (10 digitos): ");
         scanf("%10s", pacientes[i].inscricao);
         printf("Idade: ");
         scanf("%d", &pacientes[i].idade);
 
         char nomePasta[200];
-        snprintf(nomePasta, sizeof(nomePasta), "./pacientes/%s", pacientes[i].nome);
-        mkdir(nomePasta, 0777);
+        snprintf(nomePasta, sizeof(nomePasta), "./pacientes/%s", (pacientes[i].nome));
+        criarDiretorio(nomePasta, 0777);
 
-        char nomeArquivo[200];
+        char nomeArquivo[300];
         snprintf(nomeArquivo, sizeof(nomeArquivo), "%s/%s.txt", nomePasta, pacientes[i].nome);
 
         
@@ -51,7 +59,7 @@ void cadastrarPacientes(Paciente *pacientes, int quantidade) {
 }
 
 int main() {
-    int quantidade;
+    int quantidade, continuar = 0;
 
     printf("Quantos pacientes deseja cadastrar? ");
     scanf("%d", &quantidade);
@@ -61,6 +69,8 @@ int main() {
         printf("Erro na alocação de memória!\n");
         return 1;
     }
+
+
 
     cadastrarPacientes(pacientes, quantidade);
 
