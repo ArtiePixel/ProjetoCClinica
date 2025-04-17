@@ -1,9 +1,13 @@
 #include <SDL2/SDL.h>
+#include <SDL_image.h>
+#include <SDL_rect.h>
 #include <stdbool.h>
 #include <math.h>
+#include <stdio.h>
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
+#define WINDOW_WIDTH 1200
+#define WINDOW_HEIGHT 800
+#define MAX_SYMBOLS 1000
 
 typedef enum {
     SYMBOL_NONE,
@@ -13,6 +17,13 @@ typedef enum {
     SYMBOL_VERTICAL_LINE,
     SYMBOL_CHECK
 } SymbolType;
+
+typedef struct {
+    SymbolType type;
+    int x, y;
+}tSymbol;
+
+static int Symbol_cont = 0;
 
 void draw_circle(SDL_Renderer* renderer, int cx, int cy, int radius) {
     for (int w = -radius; w <= radius; w++) {
@@ -52,18 +63,62 @@ void draw_symbol(SDL_Renderer* renderer, SymbolType symbol, int x, int y) {
     }
 }
 
+void save_symbol(int *Symbol_cont, tSymbol symbols[], SymbolType currentSymbol, int x, int y){
+    if(*Symbol_cont < MAX_SYMBOLS)
+    {
+        symbols[*Symbol_cont].type = currentSymbol;
+        symbols[*Symbol_cont].x = x;
+        symbols[*Symbol_cont].y = y;
+        (*Symbol_cont)++;
+    }
+
+    else
+    printf("Numero maximo de simbolos atingido!!!");
+}
+
+void draw_window(tSymbol symbols[], SDL_Renderer* renderer, SDL_Texture* texture, SDL_Rect* sizewin, int Symbol_cont){
+    //Coloca o fundo
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, texture, NULL, sizewin);
+
+    //Cor para as simbolos
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    for(int i = 0; i < Symbol_cont; i++)
+    {
+        draw_symbol(renderer, symbols[i].type, symbols[i].x, symbols[i].y);
+    }
+    SDL_RenderPresent(renderer);
+}
+
 int main(int argc, char* argv[]) {
-    SDL_Init(SDL_INIT_VIDEO);
+    //Array para salvar os simbolos
+    tSymbol symbols[MAX_SYMBOLS];
+
+    //Inicia a janela
+    SDL_Init(SDL_INIT_EVERYTHING);
     SDL_Window* window = SDL_CreateWindow("Desenhar Símbolos SDL2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
+    //Cria a textura de fundo a partir da imagem bitmap
+    SDL_Surface* image = SDL_LoadBMP("FUNDO.bmp");
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, image);
+    SDL_FreeSurface(image);
+
+    SDL_Rect sizewin;
+    sizewin.h = WINDOW_HEIGHT;
+    sizewin.w = WINDOW_WIDTH;
+    sizewin.x = 0;
+    sizewin.y = 0;
 
     bool running = true;
     SDL_Event event;
     SymbolType currentSymbol = SYMBOL_NONE;
 
-    // Fundo branco
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderClear(renderer);
+    // Aplica o fundo
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // branco opcional para o fundo
+    SDL_RenderClear(renderer); // limpa antes de desenhar
+    SDL_RenderCopy(renderer, texture, NULL, &sizewin); // aplica textura
     SDL_RenderPresent(renderer);
 
     while (running) {
@@ -96,16 +151,22 @@ int main(int argc, char* argv[]) {
                         int x = event.button.x;
                         int y = event.button.y;
 
-                        // Cor preta para os símbolos
-                        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-                        draw_symbol(renderer, currentSymbol, x, y);
-                        SDL_RenderPresent(renderer);
+                        //Salva os simbolos no array
+                        save_symbol(&Symbol_cont, symbols, currentSymbol, x, y);
+                        //redesenha a janela
+                        draw_window(symbols, renderer, texture, &sizewin, Symbol_cont);
                     }
                     break;
             }
         }
     }
+    //Salva em um arquivo PNG
+    SDL_Surface *screenshot = SDL_CreateRGBSurface(0, WINDOW_WIDTH, WINDOW_HEIGHT, 32, 0x00, 0x00, 0x00, 0x00);
+    SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_RGBA32, screenshot->pixels, screenshot->pitch);
+    IMG_SavePNG(screenshot, "foto.png");
 
+    //Finaliza depois de fechar a janela
+    SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

@@ -29,11 +29,13 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="`sdl2-config --cflags`" />
 			<Add option="-Wall" />
+			<Add option="`sdl2-config --cflags`" />
 		</Compiler>
 		<Linker>
 			<Add option="`sdl2-config --libs`" />
+			<Add option="-lSDL2" />
+			<Add option="-lSDL2_image" />
 		</Linker>
 		<Unit filename="main.c">
 			<Option compilerVar="CPP" />
