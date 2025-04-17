@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 
 // struct paciente
 typedef struct {
@@ -9,19 +12,33 @@ typedef struct {
     int idade;
 } Paciente;
 
-void cadastrarPacientes(Paciente *pacientes, int quantidade){
+//diretiva para mudança de função a depender do sistema operacional
+#ifdef _WIN32
+    #define criarDiretorio _mkdir
+#else
+    #define criarDiretorio mkdir
+
+#endif
+
+void cadastrarPacientes(Paciente *pacientes, int quantidade) {
+    criarDiretorio("./pacientes", 0777);
+
     for (int i = 0; i < quantidade; i++) {
 
         printf("\nCadastro do Paciente %d:\n", i+1);
         printf("Nome: ");
         scanf("%49s", pacientes[i].nome);
-        printf("Número de Inscrição: ");
-        scanf("%20s", pacientes[i].inscricao);
+        printf("Número de Inscrição (10 digitos): ");
+        scanf("%10s", pacientes[i].inscricao);
         printf("Idade: ");
         scanf("%d", &pacientes[i].idade);
 
-        char nomeArquivo[60];
-        snprintf(nomeArquivo, sizeof(nomeArquivo), "%s.txt", pacientes[i].nome);
+        char nomePasta[200];
+        snprintf(nomePasta, sizeof(nomePasta), "./pacientes/%s", (pacientes[i].nome));
+        criarDiretorio(nomePasta, 0777);
+
+        char nomeArquivo[300];
+        snprintf(nomeArquivo, sizeof(nomeArquivo), "%s/%s.txt", nomePasta, pacientes[i].nome);
 
         FILE *arquivo = fopen(nomeArquivo, "w");
         if (arquivo == NULL) {
@@ -35,12 +52,12 @@ void cadastrarPacientes(Paciente *pacientes, int quantidade){
                 pacientes[i].idade);
 
         fclose(arquivo);
-        printf("Arquivo %s criado com sucesso!\n", nomeArquivo);
+        printf("Arquivo criado com sucesso em %s!\n", nomeArquivo);
     }
 }
 
 int main() {
-    int quantidade;
+    int quantidade, continuar = 0;
 
     printf("Quantos pacientes deseja cadastrar? ");
     scanf("%d", &quantidade);
@@ -50,6 +67,8 @@ int main() {
         printf("Erro na alocação de memória!\n");
         return 1;
     }
+
+
 
     cadastrarPacientes(pacientes, quantidade);
 
