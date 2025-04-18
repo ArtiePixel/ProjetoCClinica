@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <dirent.h>
 #include <ctype.h>
 
 typedef struct {
@@ -14,9 +15,11 @@ typedef struct {
 
 //funcao decidida a partir de sistema operacional especifico
 #ifdef _WIN32
-    #define criarDiretorio _mkdir
+    #include <direct.h>
+    #define criarDiretorio(path, mode) _mkdir(path)
 #else
-    #define criarDiretorio mkdir
+    #define criarDiretorio(path, mode) mkdir(path, mode)
+
 #endif
 
 // funcao para substituir espaços por underlines
@@ -90,9 +93,39 @@ int main() {
         printf("Erro na alocação de memória!\n");
         return 1;
     }
-
     cadastrarPacientes(pacientes, quantidade);
 
     free(pacientes);
+    listarPacientes();
     return 0;
+}
+void listarPacientes() {
+    DIR *dir;
+    struct dirent *entrada;
+
+    printf("\n--- LISTA DE PACIENTES ---\n");
+
+    if ((dir = opendir("./pacientes")) == NULL) {
+        printf("Nenhum paciente cadastrado!\n");
+        return;
+    }
+
+    while ((entrada = readdir(dir)) != NULL) {
+        if (strcmp(entrada->d_name, ".") == 0 || strcmp(entrada->d_name, "..") == 0)
+            continue;
+
+        char caminho[300];
+        snprintf(caminho, sizeof(caminho), "./pacientes/%s/%s.txt", entrada->d_name, entrada->d_name);
+        
+        FILE *arquivo = fopen(caminho, "r");
+        if (arquivo) {
+            char linha[256];
+            printf("\n--- Dados do Paciente ---\n");
+            while (fgets(linha, sizeof(linha), arquivo) != NULL) {
+                printf("%s", linha);
+            }
+            fclose(arquivo);
+        }
+    }
+    closedir(dir);
 }
