@@ -9,13 +9,16 @@
 #define WINDOW_HEIGHT 800
 #define MAX_SYMBOLS 1000
 
+static int Symbol_cont = 0; // contador de simbolos
+
 typedef enum {
     SYMBOL_NONE,
     SYMBOL_X,
     SYMBOL_CIRCLE,
     SYMBOL_ASTERISK,
     SYMBOL_VERTICAL_LINE,
-    SYMBOL_CHECK
+    SYMBOL_CHECK,
+    SYMBOL_ERASE,
 } SymbolType;
 
 typedef struct {
@@ -23,7 +26,8 @@ typedef struct {
     int x, y;
 }tSymbol;
 
-static int Symbol_cont = 0;
+//Array para salvar os simbolos
+    tSymbol symbols[MAX_SYMBOLS];
 
 void draw_circle(SDL_Renderer* renderer, int cx, int cy, int radius) {
     for (int w = -radius; w <= radius; w++) {
@@ -58,6 +62,10 @@ void draw_symbol(SDL_Renderer* renderer, SymbolType symbol, int x, int y) {
 
             SDL_RenderDrawLine(renderer, x - 2, y + 8, x + 10, y - 4);
             break;
+        case SYMBOL_ERASE:
+            //como não existe nada, na hora de redesenhar ele sobrescreve essa região pelo background
+            break;
+
         default:
             break;
     }
@@ -66,10 +74,12 @@ void draw_symbol(SDL_Renderer* renderer, SymbolType symbol, int x, int y) {
 void save_symbol(int *Symbol_cont, tSymbol symbols[], SymbolType currentSymbol, int x, int y){
     if(*Symbol_cont < MAX_SYMBOLS)
     {
+
         symbols[*Symbol_cont].type = currentSymbol;
         symbols[*Symbol_cont].x = x;
         symbols[*Symbol_cont].y = y;
         (*Symbol_cont)++;
+
     }
 
     else
@@ -92,8 +102,6 @@ void draw_window(tSymbol symbols[], SDL_Renderer* renderer, SDL_Texture* texture
 }
 
 int main(int argc, char* argv[]) {
-    //Array para salvar os simbolos
-    tSymbol symbols[MAX_SYMBOLS];
 
     //Inicia a janela
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -144,6 +152,9 @@ int main(int argc, char* argv[]) {
                         case SDLK_5:
                             currentSymbol = SYMBOL_CHECK;
                             break;
+                        case SDLK_6:
+                            currentSymbol = SYMBOL_ERASE;
+                            break;
                     }
                     break;
                 case SDL_MOUSEBUTTONDOWN:
@@ -151,8 +162,26 @@ int main(int argc, char* argv[]) {
                         int x = event.button.x;
                         int y = event.button.y;
 
-                        //Salva os simbolos no array
-                        save_symbol(&Symbol_cont, symbols, currentSymbol, x, y);
+                        //Transforma a forma em uma do tipo Erase
+                        if (currentSymbol == SYMBOL_ERASE)
+                        {
+                            for (int i = Symbol_cont - 1; i >= 0; i--)
+                            {
+                                if (symbols[i].type == SYMBOL_ERASE) {continue;}
+
+                                double raiz = pow(symbols[i].x - x, 2) + pow(symbols[i].y - y, 2);
+                                double distancia = sqrt(raiz);
+
+                                if (distancia < 20)
+                                {
+                                    symbols[i].type = SYMBOL_ERASE;
+                                    break;
+                                }
+                            }
+                        } else {
+                            //Salva os simbolos no array
+                            save_symbol(&Symbol_cont, symbols, currentSymbol, x, y);
+                        }
                         //redesenha a janela
                         draw_window(symbols, renderer, texture, &sizewin, Symbol_cont);
                     }
