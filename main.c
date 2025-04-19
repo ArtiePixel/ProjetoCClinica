@@ -9,7 +9,11 @@
 #define WINDOW_HEIGHT 800
 #define MAX_SYMBOLS 1000
 
-static int Symbol_cont = 0; // contador de simbolos
+// contador de simbolos
+static int Symbol_cont = 0;
+
+//contador de background
+static int currentWindow = 1;
 
 typedef enum {
     SYMBOL_NONE,
@@ -26,8 +30,8 @@ typedef struct {
     int x, y;
 }tSymbol;
 
-//Array para salvar os simbolos
-    tSymbol symbols[MAX_SYMBOLS];
+//Array para salvar os simbolos (se for adicionar mais backgrounds mudar o [número]
+    tSymbol symbols[3][MAX_SYMBOLS];
 
 void draw_circle(SDL_Renderer* renderer, int cx, int cy, int radius) {
     for (int w = -radius; w <= radius; w++) {
@@ -134,6 +138,14 @@ double distancia_Dois_Pontos(int xc, int yc, int x, int y) {
     return distancia;
 }
 
+SDL_Texture* background_changer(SDL_Renderer* renderer, char* windowN) {
+
+        SDL_Surface* image = SDL_LoadBMP(windowN);
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, image);
+
+        return texture;
+    }
+
 int main(int argc, char* argv[]) {
 
     //Inicia a janela
@@ -164,9 +176,11 @@ int main(int argc, char* argv[]) {
     SDL_RenderPresent(renderer);
 
     // Desenha as setas
-    draw_window(symbols, renderer, texture, &sizewin, Symbol_cont);
-    //contador de background
-    int i = 1;
+    draw_window(symbols[1], renderer, texture, &sizewin, Symbol_cont);
+
+    // Escolher qual imagem de fundo aparecerá
+    char windowN[1];
+    strcpy(windowN, "1"); // Default
 
     while (running) {
         while (SDL_PollEvent(&event)) {
@@ -201,68 +215,52 @@ int main(int argc, char* argv[]) {
                         int x = event.button.x;
                         int y = event.button.y;
 
-                        // Escolher qual imagem de fundo aparecerá
-                        char lado[1];
+
+                        //Detecta quando clica na seta direita
+                        if (distancia_Dois_Pontos(1150,320,x,y) < 40) {
+
+                            currentWindow++;
+                            if (currentWindow > 3) currentWindow = 3; // Evita passar para um background inexistente
+                            if (currentWindow == 1) strcpy(windowN, "1");
+                            if (currentWindow == 2) strcpy(windowN, "2");
+                            if (currentWindow == 3) strcpy(windowN, "3");
+
+                            draw_window(symbols[currentWindow], renderer, background_changer(renderer,windowN), &sizewin, Symbol_cont);
+                            continue;
+                        }
+
 
                         //Detecta quando clica na seta esquerda
                         if (distancia_Dois_Pontos(50,320,x,y) < 40) {
 
-                            if (i < 1) i = 1;
-                            if (i == 1) strcpy(lado, "1");
-                            if (i == 2) strcpy(lado, "2");
-                            if (i == 3) strcpy(lado, "3");
+                            currentWindow--;
+                            if (currentWindow < 1) currentWindow = 1; // Evita voltar para um background inexistente
+                            if (currentWindow == 1) strcpy(windowN, "1");
+                            if (currentWindow == 2) strcpy(windowN, "2");
+                            if (currentWindow == 3) strcpy(windowN, "3");
 
 
-                            SDL_Surface* image = SDL_LoadBMP(lado);
-                            SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, image);
-                            SDL_FreeSurface(image);
-                            SDL_RenderClear(renderer);
-                            SDL_RenderCopy(renderer, texture, NULL, &sizewin);
-                            SDL_RenderPresent(renderer);
-
-                            draw_window(symbols, renderer, texture, &sizewin, Symbol_cont);
+                            draw_window(symbols[currentWindow], renderer, background_changer(renderer,windowN), &sizewin, Symbol_cont);
                             continue;
                         }
-                        //Detecta quando clica na seta direita
-                        if (distancia_Dois_Pontos(1150,320,x,y) < 40) {
-
-
-                            i++;
-                            if (i > 3) i = 3;
-                            if (i == 1) strcpy(lado, "1");
-                            if (i == 2) strcpy(lado, "2");
-                            if (i == 3) strcpy(lado, "3");
-
-                            SDL_Surface* image = SDL_LoadBMP(lado);
-                            SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, image);
-                            SDL_FreeSurface(image);
-                            SDL_RenderClear(renderer);
-                            SDL_RenderCopy(renderer, texture, NULL, &sizewin);
-                            SDL_RenderPresent(renderer);
-
-                            draw_window(symbols, renderer, texture, &sizewin, Symbol_cont);
-                            continue;
-                        }
-
                         //Transforma a forma em uma do tipo Erase
                         if (currentSymbol == SYMBOL_ERASE)
                         {
                             for (int i = Symbol_cont - 1; i >= 0; i--)
                             {
-                                if (symbols[i].type == SYMBOL_ERASE) {continue;}
+                                if (symbols[currentWindow][i].type == SYMBOL_ERASE) {continue;}
 
-                                if (distancia_Dois_Pontos(symbols[i].x, symbols[i].y, x, y) < 20)
+                                if (distancia_Dois_Pontos(symbols[currentWindow][i].x, symbols[currentWindow][i].y, x, y) < 20)
                                 {
-                                    symbols[i].type = SYMBOL_ERASE;
+                                    symbols[currentWindow][i].type = SYMBOL_ERASE;
                                     break;
                                 }
                             }
                         } else {
                             //Salva os simbolos no array
-                            save_symbol(&Symbol_cont, symbols, currentSymbol, x, y);
+                            save_symbol(&Symbol_cont, symbols[currentWindow], currentSymbol, x, y);
                         }
-                        //redesenha a janela
-                        draw_window(symbols, renderer, texture, &sizewin, Symbol_cont);
+                        draw_window(symbols[currentWindow], renderer, background_changer(renderer,windowN), &sizewin, Symbol_cont);
                     }
                     break;
             }

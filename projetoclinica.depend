@@ -409,7 +409,7 @@
 	"begin_code.h"
 	"close_code.h"
 
-1745037206 source:/home/seg/projetoMeneguetti/main.c
+1745079122 source:/home/seg/projetoMeneguetti/main.c
 	<SDL2/SDL.h>
 	<SDL_image.h>
 	<SDL_rect.h>
