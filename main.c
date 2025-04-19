@@ -86,6 +86,8 @@ void save_symbol(int *Symbol_cont, tSymbol symbols[], SymbolType currentSymbol, 
     printf("Numero maximo de simbolos atingido!!!");
 }
 
+
+
 void draw_window(tSymbol symbols[], SDL_Renderer* renderer, SDL_Texture* texture, SDL_Rect* sizewin, int Symbol_cont){
     //Coloca o fundo
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -98,7 +100,38 @@ void draw_window(tSymbol symbols[], SDL_Renderer* renderer, SDL_Texture* texture
     {
         draw_symbol(renderer, symbols[i].type, symbols[i].x, symbols[i].y);
     }
+    //Seta direita
+    SDL_Rect sizewin2;
+    sizewin2.h = 50;
+    sizewin2.w = 50;
+    sizewin2.x = 1150;
+    sizewin2.y = 300;
+
+    SDL_Surface* imagemSurface = IMG_Load("seta.png");
+    SDL_Texture* imagemTextura = SDL_CreateTextureFromSurface(renderer, imagemSurface);
+    SDL_RenderCopy(renderer, imagemTextura, NULL, &sizewin2);
+
+    SDL_RenderCopy(renderer, imagemTextura, NULL, &sizewin2);
     SDL_RenderPresent(renderer);
+
+    //Seta esquerda
+    SDL_Rect sizewin3;
+    sizewin3.h = 50;
+    sizewin3.w = 50;
+    sizewin3.x = 0;
+    sizewin3.y = 300;
+
+    SDL_Surface* imagemSurface2 = IMG_Load("seta.png");
+    SDL_Texture* imagemTextura2 = SDL_CreateTextureFromSurface(renderer, imagemSurface2);
+
+    SDL_RenderCopyEx(renderer, imagemTextura2, NULL, &sizewin3,360.0,NULL, SDL_FLIP_HORIZONTAL);
+    SDL_RenderPresent(renderer);
+}
+
+double distancia_Dois_Pontos(int xc, int yc, int x, int y) {
+    double raiz = pow(xc - x, 2) + pow(yc - y, 2);
+    double distancia = sqrt(raiz);
+    return distancia;
 }
 
 int main(int argc, char* argv[]) {
@@ -109,7 +142,7 @@ int main(int argc, char* argv[]) {
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     //Cria a textura de fundo a partir da imagem bitmap
-    SDL_Surface* image = SDL_LoadBMP("FUNDO.bmp");
+    SDL_Surface* image = SDL_LoadBMP("1");
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
 
@@ -125,9 +158,15 @@ int main(int argc, char* argv[]) {
 
     // Aplica o fundo
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // branco opcional para o fundo
+
     SDL_RenderClear(renderer); // limpa antes de desenhar
     SDL_RenderCopy(renderer, texture, NULL, &sizewin); // aplica textura
     SDL_RenderPresent(renderer);
+
+    // Desenha as setas
+    draw_window(symbols, renderer, texture, &sizewin, Symbol_cont);
+    //contador de background
+    int i = 1;
 
     while (running) {
         while (SDL_PollEvent(&event)) {
@@ -158,9 +197,52 @@ int main(int argc, char* argv[]) {
                     }
                     break;
                 case SDL_MOUSEBUTTONDOWN:
-                    if (event.button.button == SDL_BUTTON_LEFT && currentSymbol != SYMBOL_NONE) {
+                    if (event.button.button == SDL_BUTTON_LEFT) {
                         int x = event.button.x;
                         int y = event.button.y;
+
+                        // Escolher qual imagem de fundo aparecerá
+                        char lado[1];
+
+                        //Detecta quando clica na seta esquerda
+                        if (distancia_Dois_Pontos(50,320,x,y) < 40) {
+
+                            if (i < 1) i = 1;
+                            if (i == 1) strcpy(lado, "1");
+                            if (i == 2) strcpy(lado, "2");
+                            if (i == 3) strcpy(lado, "3");
+
+
+                            SDL_Surface* image = SDL_LoadBMP(lado);
+                            SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, image);
+                            SDL_FreeSurface(image);
+                            SDL_RenderClear(renderer);
+                            SDL_RenderCopy(renderer, texture, NULL, &sizewin);
+                            SDL_RenderPresent(renderer);
+
+                            draw_window(symbols, renderer, texture, &sizewin, Symbol_cont);
+                            continue;
+                        }
+                        //Detecta quando clica na seta direita
+                        if (distancia_Dois_Pontos(1150,320,x,y) < 40) {
+
+
+                            i++;
+                            if (i > 3) i = 3;
+                            if (i == 1) strcpy(lado, "1");
+                            if (i == 2) strcpy(lado, "2");
+                            if (i == 3) strcpy(lado, "3");
+
+                            SDL_Surface* image = SDL_LoadBMP(lado);
+                            SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, image);
+                            SDL_FreeSurface(image);
+                            SDL_RenderClear(renderer);
+                            SDL_RenderCopy(renderer, texture, NULL, &sizewin);
+                            SDL_RenderPresent(renderer);
+
+                            draw_window(symbols, renderer, texture, &sizewin, Symbol_cont);
+                            continue;
+                        }
 
                         //Transforma a forma em uma do tipo Erase
                         if (currentSymbol == SYMBOL_ERASE)
@@ -169,10 +251,7 @@ int main(int argc, char* argv[]) {
                             {
                                 if (symbols[i].type == SYMBOL_ERASE) {continue;}
 
-                                double raiz = pow(symbols[i].x - x, 2) + pow(symbols[i].y - y, 2);
-                                double distancia = sqrt(raiz);
-
-                                if (distancia < 20)
+                                if (distancia_Dois_Pontos(symbols[i].x, symbols[i].y, x, y) < 20)
                                 {
                                     symbols[i].type = SYMBOL_ERASE;
                                     break;
@@ -192,7 +271,7 @@ int main(int argc, char* argv[]) {
     //Salva em um arquivo PNG
     SDL_Surface *screenshot = SDL_CreateRGBSurface(0, WINDOW_WIDTH, WINDOW_HEIGHT, 32, 0x00, 0x00, 0x00, 0x00);
     SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_RGBA32, screenshot->pixels, screenshot->pitch);
-    IMG_SavePNG(screenshot, "foto.png");
+    //IMG_SavePNG(screenshot, "foto.png");
 
     //Finaliza depois de fechar a janela
     SDL_DestroyTexture(texture);
