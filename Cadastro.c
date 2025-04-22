@@ -86,7 +86,7 @@ int main() {
 
     printf("Quantos pacientes deseja cadastrar? ");
     scanf("%d", &quantidade);
-    while (getchar() != '\n'); // limpeza do buffer
+    getchar(); 
 
     Paciente *pacientes = (Paciente *)malloc(quantidade * sizeof(Paciente));
     if (pacientes == NULL) {
@@ -115,7 +115,7 @@ void listarPacientes() {
             continue;
 
         char caminho[300];
-        snprintf(caminho, sizeof(caminho), "./pacientes/%s/%s.txt", entrada->d_name, entrada->d_name);
+        snprintf(caminho, sizeof(caminho), "./dados/%s/%s.txt", entrada->d_name, entrada->d_name);
         
         FILE *arquivo = fopen(caminho, "r");
         if (arquivo) {
