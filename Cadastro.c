@@ -4,19 +4,22 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <ctype.h>
+#include <dirent.h>
 
 //funcao decidida a partir de sistema operacional especifico
 #ifdef _WIN32
-    #define criarDiretorio _mkdir
+    #include <direct.h>
+    #define criarDiretorio(path, mode) _mkdir(path)
     #define abrirCMD "explorer"
 #elif __linux__
-    #define criarDiretorio mkdir
-    #define abrirPasta "nautilus"
+    #define criarDiretorio(path, mode) mkdir(path, mode)
+    #define abrirCMD "nautilus"
 #elif __APPLE__
-    #define criarDiretorio mkdir
+    #define criarDiretorio(path, mode) mkdir(path, mode)
     #define abrirCMD "open"
 #endif
 
+//struct das informacoes do paciente
 typedef struct {
     char nome[50];
     char inscricao[11];
@@ -93,6 +96,37 @@ void cadastrarPacientes(Paciente *pacientes, int quantidade) {
     }
 }
 
+void listarPacientes() {
+    DIR *dir;
+    struct dirent *entrada;
+
+    printf("\n--- LISTA DE PACIENTES ---\n");
+
+    if ((dir = opendir("./pacientes")) == NULL) {
+        printf("Nenhum paciente cadastrado!\n");
+        return;
+    }
+
+    while ((entrada = readdir(dir)) != NULL) {
+        if (strcmp(entrada->d_name, ".") == 0 || strcmp(entrada->d_name, "..") == 0)
+            continue;
+
+        char caminho[400];
+        snprintf(caminho, sizeof(caminho), "./dados/%s/%s.txt", entrada->d_name, entrada->d_name);
+        
+        FILE *arquivo = fopen(caminho, "r");
+        if (arquivo) {
+            char linha[256];
+            printf("\n--- Dados do Paciente ---\n");
+            while (fgets(linha, sizeof(linha), arquivo) != NULL) {
+                printf("%s", linha);
+            }
+            fclose(arquivo);
+        }
+    }
+    closedir(dir);
+}
+
 int main() {
     int quantidade;
 
@@ -107,6 +141,8 @@ int main() {
     }
 
     cadastrarPacientes(pacientes, quantidade);
+
+    listarPacientes();
 
     free(pacientes);
     return 0;
