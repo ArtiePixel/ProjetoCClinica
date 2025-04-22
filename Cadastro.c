@@ -5,6 +5,18 @@
 #include <sys/types.h>
 #include <ctype.h>
 
+//funcao decidida a partir de sistema operacional especifico
+#ifdef _WIN32
+    #define criarDiretorio _mkdir
+    #define abrirCMD "explorer"
+#elif __linux__
+    #define criarDiretorio mkdir
+    #define abrirPasta "nautilus"
+#elif __APPLE__
+    #define criarDiretorio mkdir
+    #define abrirCMD "open"
+#endif
+
 typedef struct {
     char nome[50];
     char inscricao[11];
@@ -12,12 +24,6 @@ typedef struct {
     int idade;
 } Paciente;
 
-//funcao decidida a partir de sistema operacional especifico
-#ifdef _WIN32
-    #define criarDiretorio _mkdir
-#else
-    #define criarDiretorio mkdir
-#endif
 
 // funcao para substituir espaços por underlines
 void removerespacosNomePasta(char *nome) {
@@ -26,6 +32,12 @@ void removerespacosNomePasta(char *nome) {
             nome[i] = '_';
         }
     }
+}
+
+void abrirInterfaceGrafica(){
+    char comando[100];
+    snprintf(comando, sizeof(comando), "./main");
+    system(comando);
 }
 
 void cadastrarPacientes(Paciente *pacientes, int quantidade) {
@@ -74,6 +86,9 @@ void cadastrarPacientes(Paciente *pacientes, int quantidade) {
                 pacientes[i].procedimento);
 
         fclose(arquivo);
+
+        abrirInterfaceGrafica();
+
         printf("Arquivo criado com sucesso em %s!\n", nomeArquivo);
     }
 }
