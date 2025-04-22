@@ -80,25 +80,6 @@ void cadastrarPacientes(Paciente *pacientes, int quantidade) {
         printf("Arquivo criado com sucesso em %s!\n", nomeArquivo);
     }
 }
-
-int main() {
-    int quantidade;
-
-    printf("Quantos pacientes deseja cadastrar? ");
-    scanf("%d", &quantidade);
-    getchar(); 
-
-    Paciente *pacientes = (Paciente *)malloc(quantidade * sizeof(Paciente));
-    if (pacientes == NULL) {
-        printf("Erro na alocação de memória!\n");
-        return 1;
-    }
-    cadastrarPacientes(pacientes, quantidade);
-
-    free(pacientes);
-    listarPacientes();
-    return 0;
-}
 void listarPacientes() {
     DIR *dir;
     struct dirent *entrada;
@@ -128,4 +109,23 @@ void listarPacientes() {
         }
     }
     closedir(dir);
+}
+
+int main() {
+    int quantidade;
+
+    printf("Quantos pacientes deseja cadastrar? ");
+    scanf("%d", &quantidade);
+    getchar(); 
+
+    Paciente *pacientes = (Paciente *)malloc(quantidade * sizeof(Paciente));
+    if (pacientes == NULL) {
+        printf("Erro na alocação de memória!\n");
+        return 1;
+    }
+    cadastrarPacientes(pacientes, quantidade);
+
+    free(pacientes);
+    listarPacientes();
+    return 0;
 }
