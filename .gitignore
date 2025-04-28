@@ -52,3 +52,11 @@ Mkfile.old
 dkms.conf
 Cadastro
 output/
+1
+2
+3
+main
+*cbp
+*depend
+*layout
+bin/
