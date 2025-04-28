@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <dirent.h>
 #include <ctype.h>
 #include <dirent.h>
 
@@ -27,6 +28,18 @@ typedef struct {
     int idade;
 } Paciente;
 
+//funcao decidida a partir de sistema operacional especifico
+#ifdef _WIN32
+    #include <direct.h>
+    #define criarDiretorio(path, mode) _mkdir(path)
+    #define abrirCMD "explorer"
+#elif __linux _ _
+    #define criarDiretorio(path, mode) mkdir(path, mode)
+    #define abrirCMD "nautilus"
+#elif __APPLE _ _
+    #define criarDiretorio(path, mode) mkdir(path, mode)
+    #define abrirCMD "open"
+#endif
 
 // funcao para substituir espaços por underlines
 void removerespacosNomePasta(char *nome) {
@@ -112,7 +125,7 @@ void listarPacientes() {
             continue;
 
         char caminho[300];
-        snprintf(caminho, sizeof(caminho), "./dados/%s/%s.txt", entrada->d_name, entrada->d_name);
+        snprintf(caminho, sizeof(caminho), "./pacientes/%s/dados.txt", entrada->d_name, entrada->d_name);
         
         FILE *arquivo = fopen(caminho, "r");
         if (arquivo) {
@@ -132,14 +145,13 @@ int main() {
 
     printf("Quantos pacientes deseja cadastrar? ");
     scanf("%d", &quantidade);
-    while (getchar() != '\n'); // limpeza do buffer
+    getchar(); 
 
     Paciente *pacientes = (Paciente *)malloc(quantidade * sizeof(Paciente));
     if (pacientes == NULL) {
         printf("Erro na alocação de memória!\n");
         return 1;
     }
-
     cadastrarPacientes(pacientes, quantidade);
 
     listarPacientes();
