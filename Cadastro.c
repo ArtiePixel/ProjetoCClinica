@@ -125,7 +125,7 @@ void listarPacientes() {
             continue;
 
         char caminho[300];
-        snprintf(caminho, sizeof(caminho), "./dados/%s/%s.txt", entrada->d_name, entrada->d_name);
+        snprintf(caminho, sizeof(caminho), "./pacientes/%s/dados.txt", entrada->d_name, entrada->d_name);
         
         FILE *arquivo = fopen(caminho, "r");
         if (arquivo) {
@@ -157,6 +157,5 @@ int main() {
     listarPacientes();
 
     free(pacientes);
-    listarPacientes();
     return 0;
 }
