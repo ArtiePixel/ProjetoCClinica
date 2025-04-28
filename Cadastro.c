@@ -28,18 +28,6 @@ typedef struct {
     int idade;
 } Paciente;
 
-//funcao decidida a partir de sistema operacional especifico
-#ifdef _WIN32
-    #include <direct.h>
-    #define criarDiretorio(path, mode) _mkdir(path)
-    #define abrirCMD "explorer"
-#elif __linux _ _
-    #define criarDiretorio(path, mode) mkdir(path, mode)
-    #define abrirCMD "nautilus"
-#elif __APPLE _ _
-    #define criarDiretorio(path, mode) mkdir(path, mode)
-    #define abrirCMD "open"
-#endif
 
 // funcao para substituir espaços por underlines
 void removerespacosNomePasta(char *nome) {
@@ -52,6 +40,7 @@ void removerespacosNomePasta(char *nome) {
 
 void abrirInterfaceGrafica(){
     char comando[100];
+    system("g++ main.c -o main `sdl2-config --cflags --libs` -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf");
     snprintf(comando, sizeof(comando), "./main");
     system(comando);
 }
@@ -140,22 +129,71 @@ void listarPacientes() {
     closedir(dir);
 }
 
-int main() {
-    int quantidade;
+void buscarPaciente() {
+    char nomeBuscado[50];
+    printf("Digite o nome do paciente a ser buscado: ");
+    fgets(nomeBuscado, sizeof(nomeBuscado), stdin);
+    nomeBuscado[strcspn(nomeBuscado, "\n")] = '\0'; 
 
-    printf("Quantos pacientes deseja cadastrar? ");
-    scanf("%d", &quantidade);
-    getchar(); 
+    char nomeProcessado[50];
+    strcpy(nomeProcessado, nomeBuscado);
+    removerespacosNomePasta(nomeProcessado);
 
-    Paciente *pacientes = (Paciente *)malloc(quantidade * sizeof(Paciente));
-    if (pacientes == NULL) {
-        printf("Erro na alocação de memória!\n");
-        return 1;
+    char caminhoPasta[300];
+    snprintf(caminhoPasta, sizeof(caminhoPasta), "./pacientes/%s", nomeProcessado);
+
+    DIR *dir = opendir(caminhoPasta);
+    if (dir) {
+        closedir(dir);
+        char comando[400];
+        snprintf(comando, sizeof(comando), "%s \"%s\"", abrirCMD, caminhoPasta);
+        printf("Paciente encontrado. Abrindo diretório...\n");
+        system(comando);
+    } else {
+        printf("Paciente não encontrado.\n");
     }
-    cadastrarPacientes(pacientes, quantidade);
+}
 
-    listarPacientes();
+int main() {
+    int quantidade, escolha, continuar = 1;
 
-    free(pacientes);
+
+    do{
+        printf("O que voce deseja fazer?\n\n");
+        printf("1 - Cadastrar Paciente\n");
+        printf("2 - Listar Pacientes\n");
+        printf("3 - Buscar Pacientes\n");
+        printf("Escolha: ");
+        scanf("%d", &escolha);
+        switch (escolha)
+        {
+        case 1:
+            printf("Quantos pacientes deseja cadastrar? ");
+            scanf("%d", &quantidade);
+            getchar(); 
+        
+            Paciente *pacientes = (Paciente *)malloc(quantidade * sizeof(Paciente));
+            if (pacientes == NULL) {
+                printf("Erro na alocação de memória!\n");
+                return 1;
+            }
+            cadastrarPacientes(pacientes, quantidade);
+            free(pacientes);
+            break;
+        
+        case 2:
+            listarPacientes();    
+            break;
+        case 3:
+            buscarPaciente();
+            break;
+        default:
+            printf("Escolha invalida.");
+            break;
+        }
+        printf("\n\nDeseja continuar? (0 - Nao, 1 - Sim) ");
+        scanf("%d", &continuar);
+    } while (continuar);
+
     return 0;
 }
