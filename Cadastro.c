@@ -17,9 +17,13 @@ typedef struct {
 #ifdef _WIN32
     #include <direct.h>
     #define criarDiretorio(path, mode) _mkdir(path)
-#else
+    #define abrirCMD "explorer"
+#elif __linux _ _
     #define criarDiretorio(path, mode) mkdir(path, mode)
-
+    #define abrirCMD "nautilus"
+#elif __APPLE _ _
+    #define criarDiretorio(path, mode) mkdir(path, mode)
+    #define abrirCMD "open"
 #endif
 
 // funcao para substituir espaços por underlines
@@ -96,7 +100,7 @@ void listarPacientes() {
             continue;
 
         char caminho[300];
-        snprintf(caminho, sizeof(caminho), "./dados/%s/%s.txt", entrada->d_name, entrada->d_name);
+        snprintf(caminho, sizeof(caminho), "./%s/dados.txt", entrada->d_name, entrada->d_name);
         
         FILE *arquivo = fopen(caminho, "r");
         if (arquivo) {
