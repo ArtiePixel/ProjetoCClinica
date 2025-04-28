@@ -5,7 +5,22 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <ctype.h>
+#include <dirent.h>
 
+//funcao decidida a partir de sistema operacional especifico
+#ifdef _WIN32
+    #include <direct.h>
+    #define criarDiretorio(path, mode) _mkdir(path)
+    #define abrirCMD "explorer"
+#elif __linux__
+    #define criarDiretorio(path, mode) mkdir(path, mode)
+    #define abrirCMD "nautilus"
+#elif __APPLE__
+    #define criarDiretorio(path, mode) mkdir(path, mode)
+    #define abrirCMD "open"
+#endif
+
+//struct das informacoes do paciente
 typedef struct {
     char nome[50];
     char inscricao[11];
@@ -33,6 +48,12 @@ void removerespacosNomePasta(char *nome) {
             nome[i] = '_';
         }
     }
+}
+
+void abrirInterfaceGrafica(){
+    char comando[100];
+    snprintf(comando, sizeof(comando), "./main");
+    system(comando);
 }
 
 void cadastrarPacientes(Paciente *pacientes, int quantidade) {
@@ -81,9 +102,13 @@ void cadastrarPacientes(Paciente *pacientes, int quantidade) {
                 pacientes[i].procedimento);
 
         fclose(arquivo);
+
+        abrirInterfaceGrafica();
+
         printf("Arquivo criado com sucesso em %s!\n", nomeArquivo);
     }
 }
+
 void listarPacientes() {
     DIR *dir;
     struct dirent *entrada;
@@ -100,7 +125,7 @@ void listarPacientes() {
             continue;
 
         char caminho[300];
-        snprintf(caminho, sizeof(caminho), "./%s/dados.txt", entrada->d_name, entrada->d_name);
+        snprintf(caminho, sizeof(caminho), "./dados/%s/%s.txt", entrada->d_name, entrada->d_name);
         
         FILE *arquivo = fopen(caminho, "r");
         if (arquivo) {
@@ -128,6 +153,8 @@ int main() {
         return 1;
     }
     cadastrarPacientes(pacientes, quantidade);
+
+    listarPacientes();
 
     free(pacientes);
     listarPacientes();
