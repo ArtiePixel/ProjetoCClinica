@@ -393,6 +393,7 @@ void change_cursor(int type){
 
         SDL_Cursor* cursor = SDL_CreateColorCursor(surfacemouse, 12, 12); // 12 é para sincronizar a imagem do simbolo com onde vai ser desenhado
         SDL_SetCursor(cursor);
+        SDL_FreeSurface(surfacemouse);
     }
 }
 
