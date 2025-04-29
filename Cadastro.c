@@ -132,7 +132,7 @@ void listarPacientes() {
 void buscarPaciente() {
     char nomeBuscado[50];
     printf("Digite o nome do paciente a ser buscado: ");
-    fgets(nomeBuscado, sizeof(nomeBuscado), stdin);
+    scanf("%s", nomeBuscado);
     nomeBuscado[strcspn(nomeBuscado, "\n")] = '\0'; 
 
     char nomeProcessado[50];
@@ -191,7 +191,7 @@ int main() {
             printf("Escolha invalida.");
             break;
         }
-        printf("\n\nDeseja continuar? (0 - Nao, 1 - Sim) ");
+        printf("\n\nDeseja continuar? (0 - Nao, 1 - Sim): ");
         scanf("%d", &continuar);
     } while (continuar);
 
